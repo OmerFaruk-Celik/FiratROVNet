@@ -129,14 +129,15 @@ class Ortam:
         window.center_on_screen()
         application.run_in_background = True
         window.color = color.rgb(10, 30, 50)  # Arka plan
-
-        # Kamera pozisyonu ve hedefi
-        self.saved_camera_pos = camera.position
-        self.saved_camera_target = camera.position + camera.forward
-
-        # EditorCamera
+        
+        # Sağ tıklama menüsünü kapat (mouse.right event'lerini yakalamak için)
+        try:
+            window.context_menu = False
+        except:
+            pass
+        EditorCamera()
         self.editor_camera = EditorCamera()
-        self.editor_camera.enabled = True  # Başlangıçta kapalı
+        self.editor_camera.enabled = False  # Başlangıçta kapalı
 
         # --- Sahne Nesneleri ---
         self.surface = Entity(
@@ -174,35 +175,8 @@ class Ortam:
         self.rovs = []
         self.engeller = []
 
-        # Kullanıcı update fonksiyonu
-        self.user_update_logic = None
-
         # Konsol verileri
         self.konsol_verileri = {}
-
-    # --- EditorCamera Toggle ve Açı + Zoom Sabitleme ---
-    def toggle_editor_camera(self):
-        ec = self.editor_camera
-        self.saved_camera_pos=camera.position
-        if not ec.enabled:
-            # EditorCamera aç
-            ec.enabled = True
-            mouse.locked = True
-            mouse.visible = False
-            print("🎥 EditorCamera AÇIK")
-        else:
-            # EditorCamera kapat ve pozisyon + hedefi kaydet
-            self.saved_camera_pos = self.saved_camera_pos
-            self.saved_camera_target = ec.position + ec.forward  # Zoom + Açıyı kaydet
-
-            ec.enabled = False
-            mouse.locked = False
-            mouse.visible = True
-            print("🎥 EditorCamera KAPALI")
-
-            # Kamerayı tam olarak kaydedilen pozisyon ve hedefe ayarla
-            camera.position = self.saved_camera_pos
-            camera.look_at(self.saved_camera_target)
 
     # --- Simülasyon Nesnelerini Oluştur ---
     def sim_olustur(self, n_rovs=3, n_engels=15):
@@ -240,15 +214,6 @@ class Ortam:
             self.rovs.append(new_rov)
 
         print(f"🌊 Simülasyon Hazır: {n_rovs} ROV, {n_engels} Gri Kaya.")
-
-    # --- Kullanıcı Update Fonksiyonu ---
-    def _internal_update(self):
-        if self.user_update_logic:
-            try:
-                self.user_update_logic()
-            except Exception as e:
-                print(f"Update Hatası: {e}")
-                self.user_update_logic = None
 
     # --- İnteraktif Shell ---
     def _start_shell(self):
